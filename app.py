@@ -16,7 +16,7 @@ def prepare_data(area, n_quartos, zona):
 	is_oeste =  1 if zona == 'oeste' else 0
 
 	dados_entrada = [[np.log1p(area)],	
-	                 [np.log1p(n_quartos)],	
+	                 [n_quartos],	
 	                 [is_leste],	
 	                 [is_norte],	
 	                 [is_oeste],	
@@ -39,7 +39,7 @@ def predict():
 	features = list(request.form.values())
 	zona, n_quartos, area = features[0], int(features[1]), int(features[2])
 	X = prepare_data(area, n_quartos, zona.lower())
-	pred=model.predict(X)
+	pred=xgb.predict(X)
 	aluguel = np.expm1(pred[0])
 	return render_template('deploy.html', prediction_text=aluguel)
 
