@@ -4,7 +4,6 @@ import numpy as np
 import pickle
 
 app = Flask(__name__)
-model = pickle.load(open('rf_regressor_gridsearch.pkl', 'rb'))
 xgb = pickle.load(open('xgboost_regression.pkl', 'rb'))
 
 def prepare_data(area, n_quartos, zona):
