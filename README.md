@@ -1,4 +1,4 @@
-# dev-awari-calculadora-imoveis-may-20
+# awari-calculadora-imoveis-nov-20
 Para o deploy no Heroku, dois arquivos de configuração devem ser adicionados ao repositório:
 ### `requirements.txt`
 Este é o arquivo mais importante pois nele há todos os bibliotecas do Python que devem ser instalados no servidor do Heroku. Nele precisamos colocar todas as importações que foram feitas ao longo do desenvolvimento de nosso código como numpy, scikit-learn e Flask. Todas dependências devem ser mencionadas, algumas serão descobertas por tentativa e erro durante o deploy no Heruku. Para nosso app, o conteúdo do arquivo deverá ser o seguinte:
