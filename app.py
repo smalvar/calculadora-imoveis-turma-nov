@@ -1,46 +1,36 @@
-from flask import Flask, render_template, request
-import pandas as pd
 import numpy as np
+from flask import Flask, render_template, request, jsonify
 import pickle
 
 app = Flask(__name__)
-xgb = pickle.load(open('xgboost_regression.pkl', 'rb'))
+model = pickle.load(open('rf_regressor_gridsearch.pkl', 'rb'))
 
-def prepare_data(area, n_quartos, zona):
-	# Tratamento
-	colunas = ['area', 'quartos', 'zona_leste', 'zona_norte', 'zona_oeste', 'zona_sul']
-	is_norte = 1 if zona == 'norte' else 0
-	is_sul = 1 if zona == 'sul' else 0
-	is_leste = 1 if zona == 'leste' else 0
-	is_oeste =  1 if zona == 'oeste' else 0
+zona_to_onehot = {'leste': np.array([1, 0, 0, 0]),
+                  'norte': np.array([0, 1, 0, 0]),
+                  'oeste': np.array([0, 0, 1, 0]),
+                  'sul'  : np.array([0, 0, 0, 1])
+                  }
 
-	dados_entrada = [[np.log1p(area)],	
-	                 [n_quartos],	
-	                 [is_leste],	
-	                 [is_norte],	
-	                 [is_oeste],	
-	                 [is_sul]]
-	dados_entrada=dict(zip(colunas, dados_entrada))
-	X=pd.DataFrame(dados_entrada)
-	return X
-
+def prepare_input(zona, quartos, area):
+    zona_prep = zona_to_onehot[zona.lower()]
+    quartos_prep = np.log1p(int(quartos))
+    area_prep = np.log1p(int(area))
+    return [np.r_[zona_prep, quartos_prep, area_prep]]
 
 @app.route('/')
 def home():
-    return render_template('deploy.html')
+    return render_template('index.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
-	# Entradas
-	#area = 50
-	#n_quartos = 3
-	#zona = 'sul'
-	features = list(request.form.values())
-	zona, n_quartos, area = features[0], int(features[1]), int(features[2])
-	X = prepare_data(area, n_quartos, zona.lower())
-	pred=xgb.predict(X)
-	aluguel = np.expm1(pred[0])
-	return render_template('deploy.html', prediction_text=aluguel)
+    features = [x for x in request.form.values()]
+    final_features = prepare_input(*features)
+    print(final_features)
+    prediction = np.expm1(model.predict(final_features))
+    output = round(prediction[0], 2)
 
-if __name__ == "__main__":
-	app.run()
+    return render_template('index.html',
+            prediction_text=f'Preço do Aluguel R$ {output}')
+
+if __name__ == '__main__':
+    app.run(debug=True)
